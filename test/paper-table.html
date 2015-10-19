@@ -1,0 +1,78 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paper-table tests</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+  <link rel="import" href="../paper-table.html">
+  <link rel="import" href="../../test-fixture/test-fixture.html">
+</head>
+<body>
+<test-fixture id="ElementTable">
+  <template>
+
+    <paper-table label="Header">
+      <paper-column label="№"
+                    sortable
+                    filter
+                    name="index"></paper-column>
+
+      <paper-column label="Название"
+                    sortable
+                    filter
+                    name="name"></paper-column>
+
+      <paper-column label="Протокол"
+                    sortable
+                    filter
+                    name="proto"></paper-column>
+
+      <paper-column label="IP-адрес отправителя"
+                    sortable
+                    filter
+                    name="srcIp"></paper-column>
+
+    </paper-table>
+
+  </template>
+</test-fixture>
+<script>
+  suite('<paper-table>', function () {
+    var table;
+
+    setup(function () {
+      table = fixture('ElementTable');
+    });
+
+    test('has title', function (done) {
+      expect(table.hasTitle()).to.be.eq(true);
+      table.removeAttribute('label');
+      expect(table.hasTitle()).to.be.eq(false);
+
+      done();
+    });
+
+    test('toggleShowContent', function (done) {
+      setTimeout(function () {
+
+        var pib = table.$$('paper-icon-button');
+        expect(table.sortDescending).to.be.eq('false');
+        pib.addEventListener('click', function () {
+          expect(table.sortDescending).to.be.eql('true');
+          done();
+        });
+
+        MockInteractions.tap(pib);
+
+      }, 1);
+
+    });
+
+  });
+</script>
+</body>
+</html>

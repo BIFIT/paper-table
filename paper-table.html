@@ -15,19 +15,19 @@
 
       --paper-input-container-color: #2E2E2E;
 
-      --paper-input-container: {
-        display: inline-flex;
-        padding: 0;
-      };
+    --paper-input-container: {
+      display: inline-flex;
+      padding: 0;
+    };
 
-      --paper-icon-button: {
-        display: inline-flex;
-        align-items: center;
-        padding: 0;
-        transition: 0.4s ease-in-out !important;
-      };
+    --paper-icon-button: {
+      display: inline-flex;
+      align-items: center;
+      padding: 0;
+      transition: 0.4s ease-in-out !important;
+    };
 
-      @apply (--shadow-elevation-2dp);
+    @apply (--shadow-elevation-2dp);
     }
 
     .flex-container {
@@ -70,6 +70,10 @@
       color: #171717 !important;
     }
 
+    tbody tr:nth-child(even) {
+      /*background-color: var(--light-primary-color);*/
+    }
+
     td {
       text-align: left;
       padding: 0.5em;
@@ -109,6 +113,8 @@
     h2 {
       padding: 1rem;
       color: #080706;
+      z-index: 2;
+      position: relative;
     }
 
     paper-input {
@@ -116,9 +122,28 @@
       color: red;
     }
 
-
     paper-icon-button {
       transform: rotate(-90deg);
+    }
+
+    .selected {
+      color: #333333;
+    }
+
+    /* SCROLL HEADER */
+    table {
+      margin-top: 2rem;
+    }
+
+    thead {
+      position: absolute;
+      background-color: white;
+      top: 0;
+      z-index: 1;
+    }
+
+    tbody {
+      overflow: auto;
     }
 
   </style>
@@ -133,7 +158,7 @@
       <br>
     </template>
 
-    <table unresolved>
+    <table unresolved="">
       <thead>
       <tr>
         <template is="dom-repeat"
@@ -180,11 +205,27 @@
 
           </template>
 
+          <!--TODO: должно быть отдельно от paper-table -->
+          <td class="center">
+            <template is="dom-if" if="[[row._status]]">
+              <iron-icon icon="check-circle"></iron-icon>
+            </template>
+            <template is="dom-if" if="[[!row._status]]">
+              <iron-icon icon="cancel"></iron-icon>
+            </template>
+          </td>
+
         </tr>
 
       </template>
 
       </tbody>
+
+      <!--      <tfoot>
+            <tr>
+              <td></td>
+            </tr>
+            </tfoot>-->
 
     </table>
 

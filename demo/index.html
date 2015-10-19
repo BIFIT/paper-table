@@ -9,7 +9,7 @@
 </head>
 <body unresolved>
 
-<paper-table>
+<paper-table label="Header">
   <paper-column label="Id"
                 sortable
                 name="id"></paper-column>
@@ -21,11 +21,11 @@
 
 
 <script>
-  window.addEventListener('WebComponentsReady', function(e) {
+  window.addEventListener('WebComponentsReady', function (e) {
     var pt = document.querySelector('paper-table');
     var rows = [];
 
-    for(var i = 0; i< 100; i++) {
+    for (var i = 0; i < 100; i++) {
       rows.push({id: i, firstName: Math.random() * 100});
     }
 

@@ -48,7 +48,7 @@ new Polymer({
   _rowPublicKeys: function (e) {
 
     return Object.keys(e).filter(e => {
-      if(e.startsWith('_')) {
+      if (e.startsWith('_')) {
         return false;
       }
 
@@ -88,7 +88,9 @@ new Polymer({
   _resetIcons: function () {
     var $icons = this.querySelectorAll('th paper-icon-button');
     for (let i = 0; i < $icons.length; i++) {
-      Polymer.Base.transform('rotate(-90deg)', $icons[i]);
+      let icon = $icons[i];
+      Polymer.Base.transform('rotate(-90deg)', icon);
+      icon.classList.remove('selected');
     }
   },
 
@@ -102,6 +104,8 @@ new Polymer({
     this._resetIcons();
 
     this.sortDescending = (this.sortDescending === 'true') ? 'false' : 'true';
+
+    e.currentTarget.classList.add('selected');
 
     if (this.sortDescending === 'true') {
       Polymer.Base.transform('rotate(-90deg)', e.currentTarget);
@@ -304,6 +308,28 @@ new Polymer({
 
   ready: function () {
     this._setColumnsAsync();
+
+    var self = this;
+    var thead = this.$$('thead');
+    var scrollContainer = null;
+
+    this.async(() => {
+      try {
+        scrollContainer = document.querySelector('#mainContainer');
+        scrollContainer.onscroll = scrollHandler;
+      } catch(e) {
+        console.warn(e);
+      }
+
+    }, 1);
+
+    function scrollHandler() {
+      if (scrollContainer.scrollTop > 48) {
+        self.transform(`translateY(${scrollContainer.scrollTop - 16}px)`, thead);
+      } else {
+        self.transform(`translateY(${0}px)`, thead);
+      }
+    }
   }
 
 });
