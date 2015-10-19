@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>paper-table demo</title>
+  <script src="../../webcomponentsjs/webcomponents.js"></script>
+
+  <link rel="import" href="../paper-table.html">
+</head>
+<body unresolved>
+
+<paper-table>
+  <paper-column label="Id"
+                sortable
+                name="id"></paper-column>
+
+  <paper-column label="First Name"
+                filter
+                name="firstName"></paper-column>
+</paper-table>
+
+
+<script>
+  window.addEventListener('WebComponentsReady', function(e) {
+    var pt = document.querySelector('paper-table');
+    var rows = [];
+
+    for(var i = 0; i< 100; i++) {
+      rows.push({id: i, firstName: Math.random() * 100});
+    }
+
+    pt.rows = rows;
+  });
+
+</script>
+
+</body>
+</html>

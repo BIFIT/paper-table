@@ -1,0 +1,270 @@
+<link rel="import" href="../../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../../bower_components/iron-icons/iron-icons.html">
+
+<dom-module id="paper-table">
+
+  <style>
+    :host {
+      display: block;
+      position: relative;
+      overflow: auto;
+      background-color: var(--primary-background-color);
+      margin: 1rem;
+
+      --paper-input-container-color: #2E2E2E;
+
+      --paper-input-container: {
+        display: inline-flex;
+        padding: 0;
+      };
+
+      --paper-icon-button: {
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        transition: 0.4s ease-in-out !important;
+      };
+
+      @apply (--shadow-elevation-2dp);
+    }
+
+    .flex-container {
+      display: flex;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      border: none;
+      min-width: 720px;
+      max-width: 100%;
+    }
+
+    tbody {
+      border-top: 1px solid rgba(0, 0, 0, .12);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #ccc;
+    }
+
+    tbody tr:nth-last-child(2) {
+      border: none;
+    }
+
+    tbody tr:not(:hover) iron-icon[icon="check-circle"] {
+      color: var(--default-primary-color);
+    }
+
+    tbody tr:not(:hover) iron-icon[icon="cancel"] {
+      color: #CBD1D8;
+    }
+
+    tbody tr:hover {
+      cursor: pointer;
+      background-color: #EEEEEE !important;
+      color: #171717 !important;
+    }
+
+    tbody tr:nth-child(even) {
+      /*background-color: var(--light-primary-color);*/
+    }
+
+    td {
+      text-align: left;
+      padding: 0.5em;
+      vertical-align: top;
+      border-top: 0;
+      line-height: 2;
+    }
+
+    td:first-child {
+      text-align: center;
+    }
+
+    th {
+      font-weight: lighter;
+      color: rgb(168, 172, 165);
+      vertical-align: bottom;
+      border-bottom: 1px solid rgba(0, 0, 0, .12);
+      padding: 1rem 0;
+    }
+
+    th:first-child {
+      padding-left: 1em;
+    }
+
+    th:last-child {
+      padding-right: 1em;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .handle {
+      cursor: pointer;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    th:first-child paper-input {
+      max-width: 3rem;
+    }
+
+    h2 {
+      padding: 1rem;
+      color: #080706;
+    }
+
+    paper-input {
+      text-align: left;
+      color: red;
+    }
+
+    /* Pure CSS Table */
+    /*:host {
+      height: 10em;
+    }
+    table {
+      display: flex;
+      flex-flow: column;
+      height: 100%;
+      width: 100%;
+    }
+    table thead {
+      /!* head takes the height it requires,
+      and it's not scaled when table is resized *!/
+      flex: 0 0 auto;
+      width: calc(100% - 0.9em);
+    }
+    table tbody {
+      /!* body takes all the remaining available space *!/
+      flex: 1 1 auto;
+      display: block;
+      overflow-y: scroll;
+    }
+    table tbody tr {
+      width: 100%;
+    }
+    table thead, table tbody tr {
+      display: table;
+      table-layout: fixed;
+    }*/
+
+    paper-icon-button {
+      transform: rotate(-90deg);
+    }
+
+  </style>
+
+  <template>
+
+    <template is="dom-if" if="{{ hasTitle() }}">
+      <h2>[[label]]</h2>
+    </template>
+
+    <br>
+
+    <br>
+
+    <table unresolved>
+      <thead>
+      <tr>
+
+
+        <template is="dom-repeat"
+                  items="{{columns}}">
+          <th>
+            <div class="flex-container">
+              <paper-icon-button hidden$="{{!item.sortable}}"
+                                 icon="arrow-back"
+                                 name$="[[item.callback]]"
+                                 on-click="myCB"
+
+                ></paper-icon-button>
+
+              <!--on-click="[[item.callbackName]]"-->
+
+
+              <!--FIXME: сделать проверку на тип -->
+              <paper-input no-label-float
+                           label="[[item.label]]"
+
+                           ></paper-input>
+              <!--value="{{hostValue::item.value}}"-->
+              <!--value="[[item.value]]"-->
+            </div>
+          </th>
+
+        </template>
+
+        <!--TODO: перенести это внутрь template -->
+        <th class="handle">
+          <div class="flex-container">
+            <paper-icon-button icon="arrow-back" on-click="sortStatus"></paper-icon-button>
+            <span>Статус</span>
+          </div>
+        </th>
+      </tr>
+      </thead>
+
+      <tbody>
+
+      <template is="dom-repeat"
+                items="{{items}}"
+                as="item"
+                index-as="indexNum"
+                filter="[[_filterByKey(filterValue, filterColumn)]]"
+                sort="[[_sortByKey(sortColumn, sortDescending)]]">
+
+        <tr on-click="selectelem">
+          <td>
+            <span>[[item.index]]</span>
+          </td>
+          <td>
+            <span>[[item.name]]</span>
+          </td>
+          <td>
+            <span>[[item.proto]]</span>
+          </td>
+          <td>
+            <span>[[item.srcIp]]</span>
+          </td>
+          <td>
+            <span>[[item.srcPort]]</span>
+          </td>
+          <td>
+            <span>[[item.dstIp]]</span>
+          </td>
+          <td>
+            <span>[[item.dstPort]]</span>
+          </td>
+          <td class="center">
+            <template is="dom-if" if="[[item.status]]">
+              <iron-icon icon="check-circle"></iron-icon>
+            </template>
+            <template is="dom-if" if="[[!item.status]]">
+              <iron-icon icon="cancel"></iron-icon>
+            </template>
+          </td>
+        </tr>
+
+      </template>
+
+      </tbody>
+
+      <!--      <tfoot>
+            <tr>
+              <td></td>
+            </tr>
+            </tfoot>-->
+
+    </table>
+
+  </template>
+
+  <script>"use strict";new Polymer({is:"paper-table",properties:{label:{type:String,notify:!1,value:function(){return""}},columns:{type:Array},items:{type:Array},filterValue:{type:String},filterColumn:{type:String},sortColumn:{type:String,observer:"_changeSortColumn"},sortDescending:{type:String,value:"false"}},observers:['_filterUpdate(index, "index")','_filterUpdate(name, "name")','_filterUpdate(proto, "proto")','_filterUpdate(srcIp, "srcIp")','_filterUpdate(srcPort, "srcPort")','_filterUpdate(dstIp, "dstIp")','_filterUpdate(dstPort, "dstPort")'],selectPolicy:function(t){page.show(t.model.policy.href)},hasTitle:function(){return!!this.getAttribute("label")},_resetIcons:function(){for(var t=this.querySelectorAll("th paper-icon-button"),e=0;e<t.length;e++)Polymer.Base.transform("rotate(-90deg)",t[e])},toggleSort:function(t){this._resetIcons(),this.sortDescending="true"===this.sortDescending?"false":"true","true"===this.sortDescending?Polymer.Base.transform("rotate(-90deg)",t.currentTarget):Polymer.Base.transform("rotate(90deg)",t.currentTarget)},sortStatus:function(t){this.sortColumn="status",this.toggleSort(t)},sortIndex:function(t){this.sortColumn="index",this.toggleSort(t)},sortName:function(t){this.sortColumn="name",this.toggleSort(t)},sortProto:function(t){this.sortColumn="proto",this.toggleSort(t)},sortSrcIp:function(t){this.sortColumn="srcIp",this.toggleSort(t)},sortSrcPort:function(t){this.sortColumn="srcPort",this.toggleSort(t)},sortDstIp:function(t){this.sortColumn="dstIp",this.toggleSort(t)},sortDstPort:function(t){this.sortColumn="dstPort",this.toggleSort(t)},_changeSortColumn:function(t){console.log(t)},_sortByKey:function(t,e){var r=function(e,r){var o=e[t],n=r[t];if("undefined"==typeof o||"undefined"==typeof n)throw"Not key detected";return"string"==typeof o&&"string"==typeof n?(o=o.toLowerCase(),n=n.toLowerCase(),n>o?-1:o>n?1:0):n-o},o=function(t,e){return e.index-t.index},n=function(t,e){return e>0?-1:0>e?1:0},i=function(t,e){return e>0?1:0>e?-1:t},s=function(t,e){var i=o(e,t),s=r(t,e);return n(i,s)},u=function(t,e){var n=o(e,t),s=r(t,e);return i(n,s)};return"false"===e?u:s},_filterByKey:function(t,e){return function(r){if(!t)return!0;if(!r)return!1;switch(typeof r[e]){case"number":if(String(r[e]).startsWith(t))return 1;break;case"string":if(String(r[e]).search(new RegExp(t,"i"))>-1)return 1}}},_filterUpdate:function(t,e){this.filterValue=t,this.filterColumn=e},_addButtonClick:function(){},ready:function(){var t=this,e=Polymer.dom(this).childNodes;this.async(function(){var r=[];e.filter(function(t){return"PAPER-COLUMN"===t.nodeName}).forEach(function(t){r.push({label:t.getAttribute("label"),value:t.getAttribute("value"),sortable:null!==t.getAttribute("sortable"),callback:t.getAttribute("callback")})}),t.set("columns",r)}),this.async(function(){t._addButtonClick()},1)}});</script>
+
+</dom-module>
