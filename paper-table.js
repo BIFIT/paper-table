@@ -99,11 +99,13 @@ new Polymer({
    * @param e
    */
   sortByColumn: function (e) {
-    this.sortColumn = e.model.item.name;
+    this.sortColumn = e.model.column.name;
 
     this._resetIcons();
 
-    this.sortDescending = (this.sortDescending === 'true') ? 'false' : 'true';
+    this.sortDescending = (this.sortDescending === 'true') ?
+      'false' :
+      'true';
 
     e.currentTarget.classList.add('selected');
 
@@ -120,7 +122,7 @@ new Polymer({
    */
   filterByColumn: function (e) {
     this.filterValue = e.currentTarget.value;
-    this.filterColumn = e.model.item.name;
+    this.filterColumn = e.model.column.name;
   },
 
   /**
@@ -320,14 +322,13 @@ new Polymer({
       } catch(e) {
         console.warn(e);
       }
-
     }, 1);
 
     function scrollHandler() {
       if (scrollContainer.scrollTop > 48) {
-        self.transform(`translateY(${scrollContainer.scrollTop - 16}px)`, thead);
+        self.transform(`translateY(${scrollContainer.scrollTop - 32}px)`, thead);
       } else {
-        self.transform(`translateY(${0}px)`, thead);
+        self.transform(`translateY(0px)`, thead);
       }
     }
   }
