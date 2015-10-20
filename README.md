@@ -1,13 +1,16 @@
 # paper-table
 
-`<paper-table>` is an element, representing a table content. 
+`<paper-table>` is an element, representing a table content.
+ 
 Specified attributes:
+
 `sortable` is a boolean attribute, it will badge the sorting by alphabet;
+
 `filter` is a boolean attribute, it will badget the filtering table by input variable.
 
 
 Example:
-
+```html
 <paper-table label="Header">
   <paper-column label="Key"
                 sortable
@@ -17,12 +20,12 @@ Example:
                 filter
                 name="firstName"></paper-column>
 </paper-table>
-    
+```
     
 ### Styling
 
 The following custom properties and mixins are available for styling:
 
-Custom property | Description | Default
-----------------|-------------|----------
+Custom property | Description 
+----------------|-------------
 `--paper-table-header-background-color` | The background color of the header 
