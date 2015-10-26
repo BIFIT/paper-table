@@ -17,7 +17,8 @@ new Polymer({
     },
 
     rows: {
-      type: Array
+      type: Array,
+      observer: '_changeRows'
     },
 
     filterValue: {
@@ -40,6 +41,14 @@ new Polymer({
   },
 
   /**
+   * Обсервер Rows
+   * @private
+   */
+  _changeRows: function () {
+    this._setFirstIconSelected();
+  },
+
+  /**
    * Сотрировка и выдача не приватных полей
    * @param e
    * @returns {*}
@@ -47,11 +56,10 @@ new Polymer({
    */
   _rowPublicKeys: function (e) {
 
-    return Object.keys(e).filter(e => {
-      if (e.startsWith('_')) {
+    return Object.keys(e).filter(item => {
+      if (item.startsWith('_')) {
         return false;
       }
-
       return true;
     });
 
@@ -86,7 +94,7 @@ new Polymer({
   },
 
   _resetIcons: function () {
-    var $icons = this.querySelectorAll('th paper-icon-button');
+    let $icons = this.querySelectorAll('th paper-icon-button');
     for (let i = 0; i < $icons.length; i++) {
       let icon = $icons[i];
       Polymer.Base.transform('rotate(-90deg)', icon);
@@ -139,7 +147,7 @@ new Polymer({
      * @param b
      * @returns {number}
      */
-    var sortByKey = function (a, b) {
+    let sortByKey = function (a, b) {
       let key1 = a[key];
       let key2 = b[key];
 
@@ -169,7 +177,7 @@ new Polymer({
      * @param b
      * @returns {number}
      */
-    var sortByIndex = function (a, b) {
+    let sortByIndex = function (a, b) {
       return b.index - a.index;
     };
 
@@ -179,7 +187,7 @@ new Polymer({
      * @param b
      * @returns {*}
      */
-    var sort = function (a, b) {
+    let sort = function (a, b) {
       if (b > 0) {
         return -1;
       } else if (b < 0) {
@@ -195,7 +203,7 @@ new Polymer({
      * @param b
      * @returns {*}
      */
-    var sortInvert = function (a, b) {
+    let sortInvert = function (a, b) {
       if (b > 0) {
         return 1;
       } else if (b < 0) {
@@ -211,7 +219,7 @@ new Polymer({
      * @param b
      * @returns {*}
      */
-    var sorterAsc = function (a, b) {
+    let sorterAsc = function (a, b) {
       let var1 = sortByIndex(b, a);
       let var2 = sortByKey(a, b);
 
@@ -224,7 +232,7 @@ new Polymer({
      * @param b
      * @returns {*}
      */
-    var sorterDesc = function (a, b) {
+    let sorterDesc = function (a, b) {
       let var1 = sortByIndex(b, a);
       let var2 = sortByKey(a, b);
 
@@ -259,18 +267,15 @@ new Polymer({
 
       switch (typeof elem[column]) {
         case 'number':
-
           if (String(elem[column]).startsWith(value)) {
             return 1;
           }
-
           break;
 
         case 'string':
           if (String(elem[column]).search(new RegExp(value, 'i')) > -1) {
             return 1;
           }
-
           break;
       }
 
@@ -304,23 +309,34 @@ new Polymer({
         });
 
       this.set('columns', paperColumnArray);
+
+      Promise.resolve();
     });
 
   },
 
-  ready: function () {
-    this._setColumnsAsync();
+  _setFirstIconSelected: function () {
+    this.async(() => {
+      let firstIconButton = this.$$('paper-icon-button');
+      firstIconButton.classList.add('selected');
 
-    var self = this;
-    var thead = this.$$('thead');
-    var scrollContainer = null;
+      Promise.resolve();
+    }, 1);
+  },
+
+  _addScrollEvents: function () {
+    let self = this;
+    let scrollContainer = null;
+    let thead = this.$$('thead');
 
     this.async(() => {
       try {
         scrollContainer = document.querySelector('#mainContainer');
         scrollContainer.onscroll = scrollHandler;
-      } catch(e) {
-        console.warn(e);
+
+        Promise.resolve();
+      } catch (e) {
+        Promise.reject(e);
       }
     }, 1);
 
@@ -331,6 +347,14 @@ new Polymer({
         self.transform(`translateY(0px)`, thead);
       }
     }
+
+  },
+
+  ready: function () {
+    Promise.resolve()
+      .then(this._setColumnsAsync())
+      .then(this._addScrollEvents())
+      .catch(console.log.bind(console));
   }
 
 });
