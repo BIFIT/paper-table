@@ -67,6 +67,7 @@
       vertical-align: bottom;
       border-bottom: 1px solid rgba(0, 0, 0, .12);
       padding: 1rem 0;
+      box-shadow: 0px 2px 0px 0px #CBD1D8;
     }
 
     th:first-child {
@@ -199,6 +200,15 @@
             </td>
           </template>
 
+          <!--TODO: должно быть отдельно от paper-table -->
+          <td class="center">
+            <template is="dom-if" if="[[row._status]]">
+              <iron-icon icon="check-circle"></iron-icon>
+            </template>
+            <template is="dom-if" if="[[!row._status]]">
+              <iron-icon icon="cancel"></iron-icon>
+            </template>
+          </td>
         </tr>
       </template>
       </tbody>
