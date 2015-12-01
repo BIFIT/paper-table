@@ -22,12 +22,12 @@
       };
 
       --paper-icon-button: {
-        display: inline-flex;
-        align-items: center;
-        padding: 0;
-        transition: 0.4s ease-in-out !important;
-        height: 2rem;
-      };
+         display: inline-flex;
+         align-items: center;
+         padding: 0;
+         transition: 0.4s ease-in-out !important;
+         height: 2rem;
+       }
 
       @apply (--shadow-elevation-2dp);
     }
@@ -67,7 +67,7 @@
       vertical-align: bottom;
       border-bottom: 1px solid rgba(0, 0, 0, .12);
       padding: 1rem 0;
-      box-shadow: 0px 2px 0px 0px #CBD1D8;
+      box-shadow: 0 2px 0 0 #CBD1D8;
     }
 
     th:first-child {
@@ -180,6 +180,7 @@
             </div>
           </th>
         </template>
+
       </tr>
       </thead>
 
@@ -187,6 +188,7 @@
       <template is="dom-repeat"
                 items="[[rows]]"
                 as="row"
+                id="xxx"
                 index-as="indexNum"
                 filter="[[_filterByKey(filterValue, filterColumn)]]"
                 sort="[[_sortByKey(sortColumn, sortDescending)]]">
@@ -199,18 +201,9 @@
               <span>[[_getRowLabel(row, label)]]</span>
             </td>
           </template>
-
-          <!--TODO: должно быть отдельно от paper-table -->
-          <td class="center">
-            <template is="dom-if" if="[[row._status]]">
-              <iron-icon icon="check-circle"></iron-icon>
-            </template>
-            <template is="dom-if" if="[[!row._status]]">
-              <iron-icon icon="cancel"></iron-icon>
-            </template>
-          </td>
         </tr>
       </template>
+
       </tbody>
     </table>
 

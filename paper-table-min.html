@@ -22,12 +22,12 @@
       };
 
       --paper-icon-button: {
-        display: inline-flex;
-        align-items: center;
-        padding: 0;
-        transition: 0.4s ease-in-out !important;
-        height: 2rem;
-      };
+         display: inline-flex;
+         align-items: center;
+         padding: 0;
+         transition: 0.4s ease-in-out !important;
+         height: 2rem;
+       }
 
       @apply (--shadow-elevation-2dp);
     }
@@ -67,7 +67,7 @@
       vertical-align: bottom;
       border-bottom: 1px solid rgba(0, 0, 0, .12);
       padding: 1rem 0;
-      box-shadow: 0px 2px 0px 0px #CBD1D8;
+      box-shadow: 0 2px 0 0 #CBD1D8;
     }
 
     th:first-child {
@@ -180,6 +180,7 @@
             </div>
           </th>
         </template>
+
       </tr>
       </thead>
 
@@ -187,6 +188,7 @@
       <template is="dom-repeat"
                 items="[[rows]]"
                 as="row"
+                id="xxx"
                 index-as="indexNum"
                 filter="[[_filterByKey(filterValue, filterColumn)]]"
                 sort="[[_sortByKey(sortColumn, sortDescending)]]">
@@ -199,18 +201,9 @@
               <span>[[_getRowLabel(row, label)]]</span>
             </td>
           </template>
-
-          <!--TODO: должно быть отдельно от paper-table -->
-          <td class="center">
-            <template is="dom-if" if="[[row._status]]">
-              <iron-icon icon="check-circle"></iron-icon>
-            </template>
-            <template is="dom-if" if="[[!row._status]]">
-              <iron-icon icon="cancel"></iron-icon>
-            </template>
-          </td>
         </tr>
       </template>
+
       </tbody>
     </table>
 
@@ -252,7 +245,15 @@ new Polymer({
     });
   },
   _getRowLabel: function(row, label) {
-    return row[label];
+    var elem = row[label];
+    if (typeof elem === 'boolean') {
+      if (elem) {
+        return '+';
+      } else {
+        return '-';
+      }
+    }
+    return elem;
   },
   _selectElem: function(e) {
     page.show(e.model.row._href);
@@ -364,6 +365,7 @@ new Polymer({
       childNodes.filter(function(e) {
         return e.nodeName === 'PAPER-COLUMN';
       }).forEach(function(e) {
+        console.log(e.getAttribute('name'));
         paperColumnArray.push({
           label: e.getAttribute('label') || '',
           sortable: e.getAttribute('sortable') !== null,
@@ -390,7 +392,9 @@ new Polymer({
     this.async(function() {
       try {
         scrollContainer = document.querySelector('#mainContainer');
-        scrollContainer.onscroll = scrollHandler;
+        if (scrollContainer) {
+          scrollContainer.onscroll = scrollHandler;
+        }
         Promise.resolve();
       } catch (e) {
         Promise.reject(e);
@@ -404,8 +408,17 @@ new Polymer({
       }
     }
   },
+  attached: function() {
+    console.log('attached');
+  },
   ready: function() {
     Promise.resolve().then(this._setColumnsAsync()).then(this._addScrollEvents()).catch(console.log.bind(console));
+  }
+});
+new Polymer({
+  is: 'paper-column',
+  ready: function() {
+    if (this.children.length) {}
   }
 });
 //# sourceURL=<compile-source>

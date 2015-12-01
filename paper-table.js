@@ -7,9 +7,7 @@ new Polymer({
     label: {
       type: String,
       notify: false,
-      value: function () {
-        return '';
-      }
+      value: () => ''
     },
 
     columns: {
@@ -44,7 +42,7 @@ new Polymer({
    * Обсервер Rows
    * @private
    */
-  _changeRows: function () {
+  _changeRows () {
     this._setFirstIconSelected();
   },
 
@@ -54,8 +52,7 @@ new Polymer({
    * @returns {*}
    * @private
    */
-  _rowPublicKeys: function (e) {
-
+  _rowPublicKeys (e) {
     return Object.keys(e).filter(item => {
       if (item.startsWith('_')) {
         return false;
@@ -72,8 +69,18 @@ new Polymer({
    * @returns {*}
    * @private
    */
-  _getRowLabel: function (row, label) {
-    return row[label];
+  _getRowLabel (row, label) {
+    let elem = row[label];
+
+    if(typeof elem === 'boolean') {
+      if(elem) {
+        return '+';
+      } else {
+        return '-';
+      }
+    }
+
+    return elem;
   },
 
   /**
@@ -81,7 +88,7 @@ new Polymer({
    * @param e
    * @private
    */
-  _selectElem: function (e) {
+  _selectElem (e) {
     page.show(e.model.row._href);
   },
 
@@ -89,11 +96,11 @@ new Polymer({
    * Проверка на наличие хэдера
    * @returns {boolean}
    */
-  hasTitle: function () {
+  hasTitle () {
     return !!this.getAttribute('label');
   },
 
-  _resetIcons: function () {
+  _resetIcons () {
     let $icons = this.querySelectorAll('th paper-icon-button');
     for (let i = 0; i < $icons.length; i++) {
       let icon = $icons[i];
@@ -106,7 +113,7 @@ new Polymer({
    * Сортировка по назавнию столбца
    * @param e
    */
-  sortByColumn: function (e) {
+  sortByColumn (e) {
     this.sortColumn = e.model.column.name;
 
     this._resetIcons();
@@ -128,7 +135,7 @@ new Polymer({
    * Фильтрация по значению
    * @param e
    */
-  filterByColumn: function (e) {
+  filterByColumn (e) {
     this.filterValue = e.currentTarget.value;
     this.filterColumn = e.model.column.name;
   },
@@ -140,14 +147,14 @@ new Polymer({
    * @returns {Function}
    * @private
    */
-  _sortByKey: function (key, order) {
+  _sortByKey (key, order) {
     /**
      * Сортировка по ключу
      * @param a
      * @param b
      * @returns {number}
      */
-    let sortByKey = function (a, b) {
+    let sortByKey = (a, b) => {
       let key1 = a[key];
       let key2 = b[key];
 
@@ -177,9 +184,7 @@ new Polymer({
      * @param b
      * @returns {number}
      */
-    let sortByIndex = function (a, b) {
-      return b.index - a.index;
-    };
+    let sortByIndex = (a, b) => b.index - a.index;
 
     /**
      * Прямая сортировка
@@ -187,7 +192,7 @@ new Polymer({
      * @param b
      * @returns {*}
      */
-    let sort = function (a, b) {
+    let sort = (a, b) => {
       if (b > 0) {
         return -1;
       } else if (b < 0) {
@@ -203,7 +208,7 @@ new Polymer({
      * @param b
      * @returns {*}
      */
-    let sortInvert = function (a, b) {
+    let sortInvert = (a, b) => {
       if (b > 0) {
         return 1;
       } else if (b < 0) {
@@ -219,7 +224,7 @@ new Polymer({
      * @param b
      * @returns {*}
      */
-    let sorterAsc = function (a, b) {
+    let sorterAsc = (a, b) => {
       let var1 = sortByIndex(b, a);
       let var2 = sortByKey(a, b);
 
@@ -232,7 +237,7 @@ new Polymer({
      * @param b
      * @returns {*}
      */
-    let sorterDesc = function (a, b) {
+    let sorterDesc = (a, b) => {
       let var1 = sortByIndex(b, a);
       let var2 = sortByKey(a, b);
 
@@ -254,9 +259,9 @@ new Polymer({
    * @returns {Function}
    * @private
    */
-  _filterByKey: function (value, column) {
+  _filterByKey (value, column) {
 
-    return function (elem) {
+    return elem => {
       if (!value) {
         return true;
       }
@@ -287,17 +292,17 @@ new Polymer({
    * берем данные из "контента"
    * @private
    */
-  _setColumnsAsync: function () {
+  _setColumnsAsync () {
     let childNodes = Polymer.dom(this).childNodes;
 
     this.async(() => {
       let paperColumnArray = [];
 
       childNodes
-        .filter(e => {
-          return e.nodeName === 'PAPER-COLUMN';
-        })
+        .filter(e => e.nodeName === 'PAPER-COLUMN')
         .forEach(e => {
+
+          console.log(e.getAttribute('name'));
 
           paperColumnArray.push({
             label: e.getAttribute('label') || '',
@@ -315,7 +320,7 @@ new Polymer({
 
   },
 
-  _setFirstIconSelected: function () {
+  _setFirstIconSelected () {
     this.async(() => {
       let firstIconButton = this.$$('paper-icon-button');
       firstIconButton.classList.add('selected');
@@ -324,7 +329,7 @@ new Polymer({
     }, 1);
   },
 
-  _addScrollEvents: function () {
+  _addScrollEvents () {
     let self = this;
     let scrollContainer = null;
     let thead = this.$$('thead');
@@ -332,7 +337,9 @@ new Polymer({
     this.async(() => {
       try {
         scrollContainer = document.querySelector('#mainContainer');
-        scrollContainer.onscroll = scrollHandler;
+        if(scrollContainer) {
+          scrollContainer.onscroll = scrollHandler;
+        }
 
         Promise.resolve();
       } catch (e) {
@@ -350,11 +357,31 @@ new Polymer({
 
   },
 
-  ready: function () {
+  attached() {
+    console.log('attached');
+  },
+
+  ready () {
     Promise.resolve()
       .then(this._setColumnsAsync())
       .then(this._addScrollEvents())
       .catch(console.log.bind(console));
+
+
+
+  }
+
+});
+
+
+new Polymer({
+  is: 'paper-column',
+
+  ready() {
+    if(this.children.length) {
+      //debugger;
+    }
+
   }
 
 });
