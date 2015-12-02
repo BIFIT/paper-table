@@ -3,6 +3,8 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 
+<script inline src="./paper-table-behaviour.js"></script>
+
 <dom-module id="paper-table">
 
   <style>
@@ -29,7 +31,7 @@
          height: 2rem;
        }
 
-      @apply (--shadow-elevation-2dp);
+      @apply(--shadow-elevation-2dp);
     }
 
     .flex-container {
@@ -90,14 +92,6 @@
       border: none;
     }
 
-    tbody tr:not(:hover) iron-icon[icon="check-circle"] {
-      color: var(--default-primary-color);
-    }
-
-    tbody tr:not(:hover) iron-icon[icon="cancel"] {
-      color: #CBD1D8;
-    }
-
     tbody tr:hover {
       cursor: pointer;
       background-color: #EEE !important;
@@ -120,14 +114,6 @@
       color: var(--paper-table-header-color);
       z-index: 2;
       position: relative;
-    }
-
-    .center {
-      text-align: center;
-    }
-
-    iron-icon {
-      position: static;
     }
 
     paper-input {
@@ -188,7 +174,6 @@
       <template is="dom-repeat"
                 items="[[rows]]"
                 as="row"
-                id="xxx"
                 index-as="indexNum"
                 filter="[[_filterByKey(filterValue, filterColumn)]]"
                 sort="[[_sortByKey(sortColumn, sortDescending)]]">

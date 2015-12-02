@@ -3,215 +3,9 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 
-<dom-module id="paper-table">
-
-  <style>
-    :host {
-      --paper-input-container-color: #2E2E2E;
-      --paper-table-header-background-color: #FFF;
-
-      display: block;
-      position: relative;
-      overflow: auto;
-      margin: 1rem;
-      background-color: var(--paper-table-header-background-color);
-
-      --paper-input-container: {
-        display: inline-flex;
-        padding: 0;
-      };
-
-      --paper-icon-button: {
-         display: inline-flex;
-         align-items: center;
-         padding: 0;
-         transition: 0.4s ease-in-out !important;
-         height: 2rem;
-       }
-
-      @apply (--shadow-elevation-2dp);
-    }
-
-    .flex-container {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      border: none;
-      min-width: 720px;
-      max-width: 100%;
-    }
-
-    thead {
-      background-color: var(--paper-table-header-background-color);
-      top: 0;
-      left: 0;
-      width: 100%;
-      right: 0;
-      z-index: 1;
-      will-change: transform;
-    }
-
-    tbody {
-      border-top: 1px solid rgba(0, 0, 0, .12);
-      overflow: auto;
-    }
-
-    th {
-      font-weight: lighter;
-      color: rgb(168, 172, 165);
-      vertical-align: bottom;
-      border-bottom: 1px solid rgba(0, 0, 0, .12);
-      padding: 1rem 0;
-      box-shadow: 0 2px 0 0 #CBD1D8;
-    }
-
-    th:first-child {
-      padding-left: 1em;
-    }
-
-    th:nth-last-child(2) {
-      padding-right: 1em;
-    }
-
-    th:first-child paper-input {
-      max-width: 3rem;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid #CBD1D8;
-    }
-
-    tbody tr:nth-last-child(2) {
-      border: none;
-    }
-
-    tbody tr:not(:hover) iron-icon[icon="check-circle"] {
-      color: var(--default-primary-color);
-    }
-
-    tbody tr:not(:hover) iron-icon[icon="cancel"] {
-      color: #CBD1D8;
-    }
-
-    tbody tr:hover {
-      cursor: pointer;
-      background-color: #EEE !important;
-    }
-
-    td {
-      text-align: left;
-      padding: 0.5em;
-      vertical-align: top;
-      border-top: 0;
-      line-height: 2;
-    }
-
-    td:first-child {
-      text-align: center;
-    }
-
-    h2 {
-      padding: 1rem;
-      color: var(--paper-table-header-color);
-      z-index: 2;
-      position: relative;
-    }
-
-    .center {
-      text-align: center;
-    }
-
-    iron-icon {
-      position: static;
-    }
-
-    paper-input {
-      text-align: left;
-    }
-
-    paper-icon-button {
-      transform: rotate(-90deg);
-      min-width: 1.5rem;
-      max-width: 1.5rem;
-    }
-
-    .selected {
-      color: #333;
-    }
-
-  </style>
-
-  <template>
-
-    <template is="dom-if" if="[[ hasTitle() ]]">
-      <h2>[[label]]</h2>
-    </template>
-
-    <template is="dom-if" if="[[ !hasTitle() ]]">
-      <br>
-    </template>
-
-    <table unresolved="">
-      <thead>
-      <tr>
-        <template is="dom-repeat"
-                  items="{{columns}}"
-                  as="column">
-          <th>
-            <div class="flex-container">
-              <paper-icon-button hidden$="[[!column.sortable]]"
-                                 icon="arrow-back"
-                                 name$="[[column.name]]"
-                                 on-click="sortByColumn">
-              </paper-icon-button>
-
-              <paper-input no-label-float
-                           hidden$="[[!column.filter]]"
-                           on-keyup="filterByColumn"
-                           label="[[column.label]]">
-              </paper-input>
-
-              <span hidden$="[[column.filter]]">[[column.label]]</span>
-            </div>
-          </th>
-        </template>
-
-      </tr>
-      </thead>
-
-      <tbody>
-      <template is="dom-repeat"
-                items="[[rows]]"
-                as="row"
-                id="xxx"
-                index-as="indexNum"
-                filter="[[_filterByKey(filterValue, filterColumn)]]"
-                sort="[[_sortByKey(sortColumn, sortDescending)]]">
-
-        <tr on-click="_selectElem">
-          <template is="dom-repeat"
-                    items="[[_rowPublicKeys(row)]]"
-                    as="label">
-            <td>
-              <span>[[_getRowLabel(row, label)]]</span>
-            </td>
-          </template>
-        </tr>
-      </template>
-
-      </tbody>
-    </table>
-
-  </template>
-
-  <script>"use strict";
-new Polymer({
-  is: 'paper-table',
+<script>"use strict";
+Polymer.MyBehaviors = Polymer.MyBehaviors || {};
+Polymer.MyBehaviors.paperTableBehaviour = {
   properties: {
     label: {
       type: String,
@@ -365,7 +159,6 @@ new Polymer({
       childNodes.filter(function(e) {
         return e.nodeName === 'PAPER-COLUMN';
       }).forEach(function(e) {
-        console.log(e.getAttribute('name'));
         paperColumnArray.push({
           label: e.getAttribute('label') || '',
           sortable: e.getAttribute('sortable') !== null,
@@ -384,42 +177,212 @@ new Polymer({
       firstIconButton.classList.add('selected');
       Promise.resolve();
     }, 1);
-  },
-  _addScrollEvents: function() {
-    var self = this;
-    var scrollContainer = null;
-    var thead = this.$$('thead');
-    this.async(function() {
-      try {
-        scrollContainer = document.querySelector('#mainContainer');
-        if (scrollContainer) {
-          scrollContainer.onscroll = scrollHandler;
-        }
-        Promise.resolve();
-      } catch (e) {
-        Promise.reject(e);
-      }
-    }, 1);
-    function scrollHandler() {
-      if (scrollContainer.scrollTop > 48) {
-        self.transform(("translateY(" + (scrollContainer.scrollTop - 32) + "px)"), thead);
-      } else {
-        self.transform("translateY(0px)", thead);
-      }
+  }
+};
+//# sourceURL=<compile-source>
+</script>
+
+<dom-module id="paper-table">
+
+  <style>
+    :host {
+      --paper-input-container-color: #2E2E2E;
+      --paper-table-header-background-color: #FFF;
+
+      display: block;
+      position: relative;
+      overflow: auto;
+      margin: 1rem;
+      background-color: var(--paper-table-header-background-color);
+
+      --paper-input-container: {
+        display: inline-flex;
+        padding: 0;
+      };
+
+      --paper-icon-button: {
+         display: inline-flex;
+         align-items: center;
+         padding: 0;
+         transition: 0.4s ease-in-out !important;
+         height: 2rem;
+       }
+
+      @apply(--shadow-elevation-2dp);
     }
-  },
-  attached: function() {
-    console.log('attached');
-  },
+
+    .flex-container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      border: none;
+      min-width: 720px;
+      max-width: 100%;
+    }
+
+    thead {
+      background-color: var(--paper-table-header-background-color);
+      top: 0;
+      left: 0;
+      width: 100%;
+      right: 0;
+      z-index: 1;
+      will-change: transform;
+    }
+
+    tbody {
+      border-top: 1px solid rgba(0, 0, 0, .12);
+      overflow: auto;
+    }
+
+    th {
+      font-weight: lighter;
+      color: rgb(168, 172, 165);
+      vertical-align: bottom;
+      border-bottom: 1px solid rgba(0, 0, 0, .12);
+      padding: 1rem 0;
+      box-shadow: 0 2px 0 0 #CBD1D8;
+    }
+
+    th:first-child {
+      padding-left: 1em;
+    }
+
+    th:nth-last-child(2) {
+      padding-right: 1em;
+    }
+
+    th:first-child paper-input {
+      max-width: 3rem;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #CBD1D8;
+    }
+
+    tbody tr:nth-last-child(2) {
+      border: none;
+    }
+
+    tbody tr:hover {
+      cursor: pointer;
+      background-color: #EEE !important;
+    }
+
+    td {
+      text-align: left;
+      padding: 0.5em;
+      vertical-align: top;
+      border-top: 0;
+      line-height: 2;
+    }
+
+    td:first-child {
+      text-align: center;
+    }
+
+    h2 {
+      padding: 1rem;
+      color: var(--paper-table-header-color);
+      z-index: 2;
+      position: relative;
+    }
+
+    paper-input {
+      text-align: left;
+    }
+
+    paper-icon-button {
+      transform: rotate(-90deg);
+      min-width: 1.5rem;
+      max-width: 1.5rem;
+    }
+
+    .selected {
+      color: #333;
+    }
+
+  </style>
+
+  <template>
+
+    <template is="dom-if" if="[[ hasTitle() ]]">
+      <h2>[[label]]</h2>
+    </template>
+
+    <template is="dom-if" if="[[ !hasTitle() ]]">
+      <br>
+    </template>
+
+    <table unresolved="">
+      <thead>
+      <tr>
+        <template is="dom-repeat"
+                  items="{{columns}}"
+                  as="column">
+          <th>
+            <div class="flex-container">
+              <paper-icon-button hidden$="[[!column.sortable]]"
+                                 icon="arrow-back"
+                                 name$="[[column.name]]"
+                                 on-click="sortByColumn">
+              </paper-icon-button>
+
+              <paper-input no-label-float
+                           hidden$="[[!column.filter]]"
+                           on-keyup="filterByColumn"
+                           label="[[column.label]]">
+              </paper-input>
+
+              <span hidden$="[[column.filter]]">[[column.label]]</span>
+            </div>
+          </th>
+        </template>
+
+      </tr>
+      </thead>
+
+      <tbody>
+      <template is="dom-repeat"
+                items="[[rows]]"
+                as="row"
+                index-as="indexNum"
+                filter="[[_filterByKey(filterValue, filterColumn)]]"
+                sort="[[_sortByKey(sortColumn, sortDescending)]]">
+
+        <tr on-click="_selectElem">
+          <template is="dom-repeat"
+                    items="[[_rowPublicKeys(row)]]"
+                    as="label">
+            <td>
+              <span>[[_getRowLabel(row, label)]]</span>
+            </td>
+          </template>
+        </tr>
+      </template>
+
+      </tbody>
+    </table>
+
+  </template>
+
+  <script>"use strict";
+new Polymer({
+  is: 'paper-table',
+  behaviors: [Polymer.MyBehaviors.paperTableBehaviour],
+  created: function() {},
   ready: function() {
     Promise.resolve().then(this._setColumnsAsync()).then(this._addScrollEvents()).catch(console.log.bind(console));
   }
 });
 new Polymer({
   is: 'paper-column',
-  ready: function() {
-    if (this.children.length) {}
-  }
+  ready: function() {}
 });
 //# sourceURL=<compile-source>
 </script>
