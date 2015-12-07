@@ -157,9 +157,15 @@ Polymer.MyBehaviors.paperTableBehaviour = {
     let sortByKey = (a, b) => {
       let key1 = a[key];
       let key2 = b[key];
-
       if ((typeof key1 === 'undefined') || (typeof key2 === 'undefined')) {
-        throw 'Not key detected';
+        if(key1) {
+          return 1;
+        }
+        if(key2) {
+          return 1;
+        }
+
+        return -1;
       }
 
       if ((typeof key1 === 'string') && (typeof key2 === 'string')) {
