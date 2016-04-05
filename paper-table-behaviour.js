@@ -2,6 +2,9 @@
 Polymer.MyBehaviors = Polymer.MyBehaviors || {};
 
 Polymer.MyBehaviors.paperTableBehaviour = {
+
+  _callback: null,
+
   properties: {
 
     label: {
@@ -16,6 +19,7 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
     rows: {
       type: Array,
+      value: () => [],
       observer: '_changeRows'
     },
 
@@ -38,27 +42,107 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
   },
 
+  set callback(callback) {
+    this._callback = callback;
+  },
+
+  get callback() {
+    return this._callback();
+  },
+
+  /**
+   * Добавление ивента скроллинга
+   */
+    _addScrollEvents () {
+    const self = this;
+
+    let maxScrollTop = 0;
+    const PADDING = 10;
+
+    let thead;
+    let spinner;
+
+    this.async(() => {
+      spinner = self.$.spinner;
+      thead = this.$$('thead');
+
+      const scrollElement = this.$.paperDialogScrollable.$.scrollable;
+      scrollElement.addEventListener('scroll', onScroll, false);
+
+      Promise.resolve();
+    });
+    /**
+     * Ленивая подгрузка данных
+     * @param e
+     */
+    function onScroll(e) {
+
+      let target = e.currentTarget;
+      let scrollHeight = target.scrollHeight;
+      let scrollTop = Math.round(target.scrollTop);
+      let clientHeight = target.clientHeight;
+
+      if (scrollTop >= (scrollHeight - clientHeight)) {
+
+        if (scrollTop >= maxScrollTop) {
+          maxScrollTop = scrollTop + PADDING;
+
+          spinner.active = true;
+
+          self.callback
+            .then(() => {
+              target.scrollTop -= PADDING;
+            })
+            .catch(error => {
+              console.log(error);
+            })
+            .then(() => {
+              spinner.active = false;
+            });
+        }
+      }
+
+      if (scrollTop >= 48) {
+        self.transform(`translateY(${ scrollTop }px)`, thead);
+      } else {
+        self.transform(`translateY(0)`, thead);
+      }
+
+    }
+
+  },
+
+  /**
+   * Очистка rows
+   */
+    clearRows() {
+    this.splice('rows', 0, this.rows.length);
+  },
+
   /**
    * Обсервер Rows
    * @private
    */
-    _changeRows () {
+    _changeRows() {
     this._setFirstIconSelected();
   },
 
   /**
    * Сотрировка и выдача не приватных полей
    * @param e
-   * @returns {*}
+   * @returns {Array}
    * @private
    */
-    _rowPublicKeys (e) {
-    return Object.keys(e).filter(item => {
-      if (item.startsWith('_')) {
-        return false;
-      }
-      return true;
-    });
+    _rowPublicKeys(e) {
+
+    return Object
+      .keys(e)
+      .filter(item => {
+        if (item.startsWith('_')) {
+          return false;
+        }
+        return true;
+      });
 
   },
 
@@ -69,11 +153,11 @@ Polymer.MyBehaviors.paperTableBehaviour = {
    * @returns {*}
    * @private
    */
-    _getRowLabel (row, label) {
+    _getRowLabel(row, label) {
     let elem = row[label];
 
-    if(typeof elem === 'boolean') {
-      if(elem) {
+    if (typeof elem === 'boolean') {
+      if (elem) {
         return '+';
       } else {
         return '-';
@@ -85,22 +169,25 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
   /**
    * Клик на ячейку
-   * @param e
+   * @param e {Object}
    * @private
    */
-    _selectElem (e) {
+    _selectElem(e) {
     page.show(e.model.row._href);
   },
 
   /**
    * Проверка на наличие хэдера
-   * @returns {boolean}
+   * @returns {Boolean}
    */
-    hasTitle () {
+    hasTitle() {
     return !!this.getAttribute('label');
   },
 
-  _resetIcons () {
+  /**
+   *
+   */
+    _resetIcons() {
     let $icons = this.querySelectorAll('th paper-icon-button');
     for (let i = 0; i < $icons.length; i++) {
       let icon = $icons[i];
@@ -111,9 +198,9 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
   /**
    * Сортировка по назавнию столбца
-   * @param e
+   * @param e {Object}
    */
-    sortByColumn (e) {
+    sortByColumn(e) {
     this.sortColumn = e.model.column.name;
 
     this._resetIcons();
@@ -133,9 +220,9 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
   /**
    * Фильтрация по значению
-   * @param e
+   * @param e {Object}
    */
-    filterByColumn (e) {
+    filterByColumn(e) {
     this.filterValue = e.currentTarget.value;
     this.filterColumn = e.model.column.name;
   },
@@ -147,7 +234,7 @@ Polymer.MyBehaviors.paperTableBehaviour = {
    * @returns {Function}
    * @private
    */
-    _sortByKey (key, order) {
+    _sortByKey(key, order) {
     /**
      * Сортировка по ключу
      * @param a
@@ -158,10 +245,10 @@ Polymer.MyBehaviors.paperTableBehaviour = {
       let key1 = a[key];
       let key2 = b[key];
       if ((typeof key1 === 'undefined') || (typeof key2 === 'undefined')) {
-        if(key1) {
+        if (key1) {
           return 1;
         }
-        if(key2) {
+        if (key2) {
           return 1;
         }
 
@@ -265,7 +352,7 @@ Polymer.MyBehaviors.paperTableBehaviour = {
    * @returns {Function}
    * @private
    */
-    _filterByKey (value, column) {
+    _filterByKey(value, column) {
 
     return elem => {
       if (!value) {
@@ -298,8 +385,8 @@ Polymer.MyBehaviors.paperTableBehaviour = {
    * берем данные из "контента"
    * @private
    */
-    _setColumnsAsync () {
-    let childNodes = Polymer.dom(this).childNodes;
+    _setColumnsAsync() {
+    const childNodes = Polymer.dom(this).childNodes;
 
     this.async(() => {
       let paperColumnArray = [];
@@ -324,13 +411,18 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
   },
 
-  _setFirstIconSelected () {
+  /**
+   *
+   */
+    _setFirstIconSelected() {
+
     this.async(() => {
       let firstIconButton = this.$$('paper-icon-button');
       firstIconButton.classList.add('selected');
 
       Promise.resolve();
     }, 1);
+
   }
 
 };

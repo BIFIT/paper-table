@@ -8,8 +8,7 @@ Specified attributes:
 
 `filter` is a boolean attribute, it will badget the filtering table by input variable.
 
-
-Example:
+#### Example:
 ```html
 <paper-table label="Header">
   <paper-column label="Key"
@@ -21,7 +20,12 @@ Example:
                 name="firstName"></paper-column>
 </paper-table>
 ```
-    
+
+#### OnScroll Callback
+```js
+paperTable.callback = promise.bind(this);
+```
+
 ### Styling
 
 The following custom properties and mixins are available for styling:

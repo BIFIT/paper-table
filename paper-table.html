@@ -3,8 +3,6 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 
-<script inline src="./paper-table-behaviour.js"></script>
-
 <dom-module id="paper-table">
 
   <style>
@@ -14,24 +12,28 @@
 
       display: block;
       position: relative;
-      overflow: auto;
-      margin: 1rem;
+      overflow: hidden;
+      margin: 0;
       background-color: var(--paper-table-header-background-color);
 
       --paper-input-container: {
         display: inline-flex;
         padding: 0;
-      };
+      }
 
       --paper-icon-button: {
-         display: inline-flex;
-         align-items: center;
-         padding: 0;
-         transition: 0.4s ease-in-out !important;
-         height: 2rem;
-       }
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        transition: 0.4s ease-in-out !important;
+        height: 2rem;
+      }
 
-      @apply(--shadow-elevation-2dp);
+      --paper-dialog-scrollable: {
+        padding: 0;
+      }
+
+      @apply (--shadow-elevation-2dp);
     }
 
     .flex-container {
@@ -86,6 +88,7 @@
 
     tbody tr {
       border-bottom: 1px solid #CBD1D8;
+      word-wrap: break-word;
     }
 
     tbody tr:nth-last-child(2) {
@@ -103,6 +106,14 @@
       vertical-align: top;
       border-top: 0;
       line-height: 2;
+    }
+
+    tbody tr:not(:hover) iron-icon[icon="check-circle"] {
+      color: var(--default-primary-color);
+    }
+
+    tbody tr:not(:hover) iron-icon[icon="cancel"] {
+      color: #CBD1D8;
     }
 
     td:first-child {
@@ -126,6 +137,15 @@
       max-width: 1.5rem;
     }
 
+    #spinner {
+      margin: auto;
+      position: absolute;
+      bottom: 0;
+      overflow: hidden;
+      left: 0;
+      right: 0;
+    }
+
     .selected {
       color: #333;
     }
@@ -138,62 +158,65 @@
       <h2>[[label]]</h2>
     </template>
 
-    <template is="dom-if" if="[[ !hasTitle() ]]">
-      <br>
-    </template>
+    <paper-dialog-scrollable id="paperDialogScrollable">
 
-    <table unresolved="">
-      <thead>
-      <tr>
+      <table unresolved>
+        <thead>
+        <tr>
+          <template is="dom-repeat"
+                    items="{{columns}}"
+                    as="column">
+            <th>
+              <div class="flex-container">
+                <paper-icon-button hidden$="[[!column.sortable]]"
+                                   icon="arrow-back"
+                                   name$="[[column.name]]"
+                                   on-click="sortByColumn">
+                </paper-icon-button>
+
+                <paper-input no-label-float
+                             hidden$="[[!column.filter]]"
+                             on-keyup="filterByColumn"
+                             label="[[column.label]]">
+                </paper-input>
+
+                <span hidden$="[[column.filter]]">[[column.label]]</span>
+              </div>
+            </th>
+          </template>
+
+        </tr>
+        </thead>
+
+        <tbody>
         <template is="dom-repeat"
-                  items="{{columns}}"
-                  as="column">
-          <th>
-            <div class="flex-container">
-              <paper-icon-button hidden$="[[!column.sortable]]"
-                                 icon="arrow-back"
-                                 name$="[[column.name]]"
-                                 on-click="sortByColumn">
-              </paper-icon-button>
+                  items="[[rows]]"
+                  as="row"
+                  index-as="indexNum"
+                  filter="[[_filterByKey(filterValue, filterColumn)]]"
+                  sort="[[_sortByKey(sortColumn, sortDescending)]]">
 
-              <paper-input no-label-float
-                           hidden$="[[!column.filter]]"
-                           on-keyup="filterByColumn"
-                           label="[[column.label]]">
-              </paper-input>
-
-              <span hidden$="[[column.filter]]">[[column.label]]</span>
-            </div>
-          </th>
+          <tr on-click="_selectElem">
+            <template is="dom-repeat"
+                      items="[[_rowPublicKeys(row)]]"
+                      as="label">
+              <td>
+                <span>[[_getRowLabel(row, label)]]</span>
+              </td>
+            </template>
+          </tr>
         </template>
 
-      </tr>
-      </thead>
+        </tbody>
+      </table>
+    </paper-dialog-scrollable>
 
-      <tbody>
-      <template is="dom-repeat"
-                items="[[rows]]"
-                as="row"
-                index-as="indexNum"
-                filter="[[_filterByKey(filterValue, filterColumn)]]"
-                sort="[[_sortByKey(sortColumn, sortDescending)]]">
-
-        <tr on-click="_selectElem">
-          <template is="dom-repeat"
-                    items="[[_rowPublicKeys(row)]]"
-                    as="label">
-            <td>
-              <span>[[_getRowLabel(row, label)]]</span>
-            </td>
-          </template>
-        </tr>
-      </template>
-
-      </tbody>
-    </table>
+    <paper-spinner id="spinner" alt=""></paper-spinner>
 
   </template>
 
+  <script inline src="./paper-table-behaviour.js"></script>
+  <script inline src="./paper-column.js"></script>
   <script inline src="./paper-table.js"></script>
 
 </dom-module>
