@@ -3,7 +3,11 @@ Polymer.MyBehaviors = Polymer.MyBehaviors || {};
 
 Polymer.MyBehaviors.paperTableBehaviour = {
 
-  _callback: null,
+  _callback: function () {
+    console.log('override');
+
+    return Promise.resolve();
+  },
 
   properties: {
 
@@ -71,6 +75,7 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
       Promise.resolve();
     });
+
     /**
      * Ленивая подгрузка данных
      * @param e
@@ -103,7 +108,7 @@ Polymer.MyBehaviors.paperTableBehaviour = {
       }
 
       if (scrollTop >= 48) {
-        self.transform(`translateY(${ scrollTop }px)`, thead);
+        self.transform(`translateY(${ Math.floor(target.scrollTop) }px)`, thead);
       } else {
         self.transform(`translateY(0)`, thead);
       }
@@ -137,12 +142,7 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
     return Object
       .keys(e)
-      .filter(item => {
-        if (item.startsWith('_')) {
-          return false;
-        }
-        return true;
-      });
+      .filter(item => !item.startsWith('_'));
 
   },
 
@@ -169,11 +169,22 @@ Polymer.MyBehaviors.paperTableBehaviour = {
 
   /**
    * Клик на ячейку
-   * @param e {Object}
    * @private
    */
-    _selectElem(e) {
-    page.show(e.model.row._href);
+    _onSelectTr(e) {
+    const row = e.model.row;
+
+    this.fire('click-tr', {row, index: this.rows.indexOf(row)});
+  },
+
+  /**
+   * Двойной клик на ячейку
+   * @private
+   */
+    _onDblSelectTr(e) {
+    const row = e.model.row;
+
+    this.fire('dblclick-tr', {row, index: this.rows.indexOf(row)});
   },
 
   /**
@@ -188,12 +199,12 @@ Polymer.MyBehaviors.paperTableBehaviour = {
    *
    */
     _resetIcons() {
-    let $icons = this.querySelectorAll('th paper-icon-button');
-    for (let i = 0; i < $icons.length; i++) {
-      let icon = $icons[i];
+
+    [].forEach.call(this.querySelectorAll('th paper-icon-button'), icon => {
       Polymer.Base.transform('rotate(-90deg)', icon);
       icon.classList.remove('selected');
-    }
+    });
+
   },
 
   /**

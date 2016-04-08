@@ -3,8 +3,6 @@
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../iron-icons/iron-icons.html">
 
-<script>"use strict";Polymer.MyBehaviors=Polymer.MyBehaviors||{},Polymer.MyBehaviors.paperTableBehaviour={properties:{label:{type:String,notify:!1,value:function(){return""}},columns:{type:Array},rows:{type:Array,value:function(){return[]},observer:"_changeRows"},filterValue:{type:String},filterColumn:{type:String},sortColumn:{type:String},sortDescending:{type:String,value:"false"}},clearRows:function(){this.splice("rows",0,this.rows.length)},_changeRows:function(){this._setFirstIconSelected()},_rowPublicKeys:function(e){return Object.keys(e).filter(function(e){return e.startsWith("_")?!1:!0})},_getRowLabel:function(e,t){var r=e[t];return"boolean"==typeof r?r?"+":"-":r},_selectElem:function(e){page.show(e.model.row._href)},hasTitle:function(){return!!this.getAttribute("label")},_resetIcons:function(){for(var e=this.querySelectorAll("th paper-icon-button"),t=0;t<e.length;t++){var r=e[t];Polymer.Base.transform("rotate(-90deg)",r),r.classList.remove("selected")}},sortByColumn:function(e){this.sortColumn=e.model.column.name,this._resetIcons(),this.sortDescending="true"===this.sortDescending?"false":"true",e.currentTarget.classList.add("selected"),"true"===this.sortDescending?Polymer.Base.transform("rotate(-90deg)",e.currentTarget):Polymer.Base.transform("rotate(90deg)",e.currentTarget)},filterByColumn:function(e){this.filterValue=e.currentTarget.value,this.filterColumn=e.model.column.name},_sortByKey:function(e,t){var r=function(t,r){var n=t[e],o=r[e];return"undefined"==typeof n||"undefined"==typeof o?n?1:o?1:-1:"string"==typeof n&&"string"==typeof o?(n=n.toLowerCase(),o=o.toLowerCase(),o>n?-1:n>o?1:0):o-n},n=function(e,t){return t.index-e.index},o=function(e,t){return t>0?-1:0>t?1:0},i=function(e,t){return t>0?1:0>t?-1:e},s=function(e,t){var i=n(t,e),s=r(e,t);return o(i,s)},u=function(e,t){var o=n(t,e),s=r(e,t);return i(o,s)};return"false"===t?u:s},_filterByKey:function(e,t){return function(r){if(!e)return!0;if(!r)return!1;switch($traceurRuntime["typeof"](r[t])){case"number":if(String(r[t]).startsWith(e))return 1;break;case"string":if(String(r[t]).search(new RegExp(e,"i"))>-1)return 1}}},_setColumnsAsync:function(){var e=this,t=Polymer.dom(this).childNodes;this.async(function(){var r=[];t.filter(function(e){return"PAPER-COLUMN"===e.nodeName}).forEach(function(e){r.push({label:e.getAttribute("label")||"",sortable:null!==e.getAttribute("sortable"),filter:null!==e.getAttribute("filter"),name:e.getAttribute("name")||""})}),e.set("columns",r),Promise.resolve()})},_setFirstIconSelected:function(){var e=this;this.async(function(){var t=e.$$("paper-icon-button");t.classList.add("selected"),Promise.resolve()},1)}};</script>
-
 <dom-module id="paper-table">
 
   <style>
@@ -14,24 +12,32 @@
 
       display: block;
       position: relative;
-      overflow: auto;
-      margin: 1rem;
+      overflow: hidden;
+      margin: 0;
       background-color: var(--paper-table-header-background-color);
 
       --paper-input-container: {
         display: inline-flex;
         padding: 0;
-      };
+      }
 
       --paper-icon-button: {
-         display: inline-flex;
-         align-items: center;
-         padding: 0;
-         transition: 0.4s ease-in-out !important;
-         height: 2rem;
-       }
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        transition: 0.4s ease-in-out !important;
+        height: 2rem;
+      }
 
-      @apply(--shadow-elevation-2dp);
+      --paper-dialog-scrollable: {
+        padding: 0;
+      }
+
+      @apply (--shadow-elevation-2dp);
+    }
+
+    paper-dialog-scrollable {
+      height: 100% !important;
     }
 
     .flex-container {
@@ -86,6 +92,7 @@
 
     tbody tr {
       border-bottom: 1px solid #CBD1D8;
+      word-wrap: break-word;
     }
 
     tbody tr:nth-last-child(2) {
@@ -105,8 +112,16 @@
       line-height: 2;
     }
 
+    tbody tr:not(:hover) iron-icon[icon="check-circle"] {
+      color: var(--default-primary-color);
+    }
+
+    tbody tr:not(:hover) iron-icon[icon="cancel"] {
+      color: #CBD1D8;
+    }
+
     td:first-child {
-      text-align: center;
+      /*text-align: center;*/
     }
 
     h2 {
@@ -126,6 +141,15 @@
       max-width: 1.5rem;
     }
 
+    #spinner {
+      margin: auto;
+      position: absolute;
+      bottom: 0;
+      overflow: hidden;
+      left: 0;
+      right: 0;
+    }
+
     .selected {
       color: #333;
     }
@@ -138,62 +162,66 @@
       <h2>[[label]]</h2>
     </template>
 
-    <template is="dom-if" if="[[ !hasTitle() ]]">
-      <br>
-    </template>
+    <paper-dialog-scrollable id="paperDialogScrollable">
 
-    <table unresolved="">
-      <thead>
-      <tr>
-        <template is="dom-repeat"
-                  items="{{columns}}"
-                  as="column">
-          <th>
-            <div class="flex-container">
-              <paper-icon-button hidden$="[[!column.sortable]]"
-                                 icon="arrow-back"
-                                 name$="[[column.name]]"
-                                 on-click="sortByColumn">
-              </paper-icon-button>
+      <table unresolved>
+        <thead>
+        <tr>
+          <template is="dom-repeat"
+                    items="{{columns}}"
+                    as="column">
+            <th>
+              <div class="flex-container">
+                <paper-icon-button hidden$="[[!column.sortable]]"
+                                   icon="arrow-back"
+                                   name$="[[column.name]]"
+                                   on-click="sortByColumn">
+                </paper-icon-button>
 
-              <paper-input no-label-float
-                           hidden$="[[!column.filter]]"
-                           on-keyup="filterByColumn"
-                           label="[[column.label]]">
-              </paper-input>
+                <paper-input no-label-float
+                             hidden$="[[!column.filter]]"
+                             on-keyup="filterByColumn"
+                             label="[[column.label]]">
+                </paper-input>
 
-              <span hidden$="[[column.filter]]">[[column.label]]</span>
-            </div>
-          </th>
+                <span hidden$="[[column.filter]]">[[column.label]]</span>
+              </div>
+            </th>
+          </template>
+
+        </tr>
+        </thead>
+
+        <tbody>
+        <template id="rows"
+                  is="dom-repeat"
+                  items="[[rows]]"
+                  as="row"
+                  index-as="indexNum"
+                  filter="[[_filterByKey(filterValue, filterColumn)]]"
+                  sort="[[_sortByKey(sortColumn, sortDescending)]]">
+          <tr on-click="_onSelectTr"
+              on-dblclick="_onDblSelectTr">
+            <template is="dom-repeat"
+                      items="[[_rowPublicKeys(row)]]"
+                      as="label">
+              <td>
+                <span>[[_getRowLabel(row, label)]]</span>
+              </td>
+            </template>
+          </tr>
         </template>
 
-      </tr>
-      </thead>
+        </tbody>
+      </table>
+    </paper-dialog-scrollable>
 
-      <tbody>
-      <template is="dom-repeat"
-                items="[[rows]]"
-                as="row"
-                index-as="indexNum"
-                filter="[[_filterByKey(filterValue, filterColumn)]]"
-                sort="[[_sortByKey(sortColumn, sortDescending)]]">
-
-        <tr on-click="_selectElem">
-          <template is="dom-repeat"
-                    items="[[_rowPublicKeys(row)]]"
-                    as="label">
-            <td>
-              <span>[[_getRowLabel(row, label)]]</span>
-            </td>
-          </template>
-        </tr>
-      </template>
-
-      </tbody>
-    </table>
+    <paper-spinner id="spinner" alt=""></paper-spinner>
 
   </template>
 
-  <script>"use strict";new Polymer({is:"paper-table",behaviors:[Polymer.MyBehaviors.paperTableBehaviour],created:function(){},ready:function(){Promise.resolve().then(this._setColumnsAsync()).then(this._addScrollEvents())["catch"](console.log.bind(console))}}),new Polymer({is:"paper-column",ready:function(){}});</script>
+  <script>"use strict";Polymer.MyBehaviors=Polymer.MyBehaviors||{},Polymer.MyBehaviors.paperTableBehaviour={_callback:function(){return console.log("override"),Promise.resolve()},properties:{label:{type:String,notify:!1,value:function(){return""}},columns:{type:Array},rows:{type:Array,value:function(){return[]},observer:"_changeRows"},filterValue:{type:String},filterColumn:{type:String},sortColumn:{type:String},sortDescending:{type:String,value:"false"}},set callback(e){this._callback=e},get callback(){return this._callback()},_addScrollEvents:function(){function e(e){var n=e.currentTarget,l=n.scrollHeight,c=Math.round(n.scrollTop),a=n.clientHeight;c>=l-a&&c>=i&&(i=c+s,r.active=!0,o.callback.then(function(){n.scrollTop-=s})["catch"](function(e){console.log(e)}).then(function(){r.active=!1})),c>=48?o.transform("translateY("+Math.floor(n.scrollTop)+"px)",t):o.transform("translateY(0)",t)}var t,r,n=this,o=this,i=0,s=10;this.async(function(){r=o.$.spinner,t=n.$$("thead");var i=n.$.paperDialogScrollable.$.scrollable;i.addEventListener("scroll",e,!1),Promise.resolve()})},clearRows:function(){this.splice("rows",0,this.rows.length)},_changeRows:function(){this._setFirstIconSelected()},_rowPublicKeys:function(e){return Object.keys(e).filter(function(e){return!e.startsWith("_")})},_getRowLabel:function(e,t){var r=e[t];return"boolean"==typeof r?r?"+":"-":r},_onSelectTr:function(e){var t=e.model.row;this.fire("click-tr",{row:t,index:this.rows.indexOf(t)})},_onDblSelectTr:function(e){var t=e.model.row;this.fire("dblclick-tr",{row:t,index:this.rows.indexOf(t)})},hasTitle:function(){return!!this.getAttribute("label")},_resetIcons:function(){[].forEach.call(this.querySelectorAll("th paper-icon-button"),function(e){Polymer.Base.transform("rotate(-90deg)",e),e.classList.remove("selected")})},sortByColumn:function(e){this.sortColumn=e.model.column.name,this._resetIcons(),this.sortDescending="true"===this.sortDescending?"false":"true",e.currentTarget.classList.add("selected"),"true"===this.sortDescending?Polymer.Base.transform("rotate(-90deg)",e.currentTarget):Polymer.Base.transform("rotate(90deg)",e.currentTarget)},filterByColumn:function(e){this.filterValue=e.currentTarget.value,this.filterColumn=e.model.column.name},_sortByKey:function(e,t){var r=function(t,r){var n=t[e],o=r[e];return"undefined"==typeof n||"undefined"==typeof o?n?1:o?1:-1:"string"==typeof n&&"string"==typeof o?(n=n.toLowerCase(),o=o.toLowerCase(),o>n?-1:n>o?1:0):o-n},n=function(e,t){return t.index-e.index},o=function(e,t){return t>0?-1:0>t?1:0},i=function(e,t){return t>0?1:0>t?-1:e},s=function(e,t){var i=n(t,e),s=r(e,t);return o(i,s)},l=function(e,t){var o=n(t,e),s=r(e,t);return i(o,s)};return"false"===t?l:s},_filterByKey:function(e,t){return function(r){if(!e)return!0;if(!r)return!1;switch($traceurRuntime["typeof"](r[t])){case"number":if(String(r[t]).startsWith(e))return 1;break;case"string":if(String(r[t]).search(new RegExp(e,"i"))>-1)return 1}}},_setColumnsAsync:function(){var e=this,t=Polymer.dom(this).childNodes;this.async(function(){var r=[];t.filter(function(e){return"PAPER-COLUMN"===e.nodeName}).forEach(function(e){r.push({label:e.getAttribute("label")||"",sortable:null!==e.getAttribute("sortable"),filter:null!==e.getAttribute("filter"),name:e.getAttribute("name")||""})}),e.set("columns",r),Promise.resolve()})},_setFirstIconSelected:function(){var e=this;this.async(function(){var t=e.$$("paper-icon-button");t.classList.add("selected"),Promise.resolve()},1)}};</script>
+  <script>"use strict";new Polymer({is:"paper-column"});</script>
+  <script>"use strict";new Polymer({is:"paper-table",behaviors:[Polymer.MyBehaviors.paperTableBehaviour],ready:function(){Promise.resolve().then(this._setColumnsAsync()).then(this._addScrollEvents())["catch"](console.log.bind(console))}});</script>
 
 </dom-module>

@@ -26,6 +26,9 @@ Specified attributes:
 paperTable.callback = promise.bind(this);
 ```
 
+
+Если есть данные которые должны находиться внутри модели, но не отображаться тогда используйте префикс _
+
 ### Styling
 
 The following custom properties and mixins are available for styling:
